@@ -1,8 +1,64 @@
 <!DOCTYPE html>
 <head>
-  <script src="stockfish.js" charset="utf-8"></script>
+  <!-- <script src="stockfish.js" charset="utf-8"></script> -->
+  <script
+    src="https://code.jquery.com/jquery-3.1.1.min.js"
+    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+    crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    var log = function(message) {
+      $('#output').append(message + "\n");
+    };
+
+    $(function() {
+      var stockfish = new Worker('stockfish.js');
+      // log('stockfish worker created');
+      stockfish.postMessage('uci');
+
+      stockfish.onmessage = function(event) {
+        // console.log('message received');
+        // console.log(event);
+        var message = event.data;
+        log(message);
+
+        var scoreRegexp = /score cp (-?\d+)/;
+        var match = message.match(scoreRegexp);
+        if (match) {
+          var score = match[1];
+          $('#score').text(score);
+        };
+
+        var bestMoveRegexp = /bestmove ([a-h][1-8][a-h][1-8])/;
+        var match = message.match(bestMoveRegexp);
+        if (match) {
+          var bestMove = match[1];
+          $('#bestMove').text(bestMove);
+        };
+      };
+
+      $('#execute').click(function() {
+        // console.log('#execute onclick');
+        var uciCommand = $('#command').val();
+        // console.log(uciCommand);
+        stockfish.postMessage(uciCommand);
+        stockfish.postMessage('go');
+      });
+    });
+  </script>
   <title>Test page</title>
 </head>
 <body>
-  <h1>Test page</h1>
+  <h1>Stockfish</h1>
+
+  <h2>Commands</h2>
+  <p>Example of setting the board: "position startpos moves e2e4".</p>
+  <form action="#">
+    <textarea id="command" rows="5" cols="50"></textarea>
+    <button id="execute">Go</button>
+  </form>
+
+  <h2>Output</h2>
+  <p>Score: <span id="score"></span></p>
+  <p>Best move: <span id="bestMove"></span></p>
+  <pre id="output"></pre>
 </body>
