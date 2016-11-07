@@ -41,7 +41,7 @@
         var uciCommand = $('#command').val();
         // console.log(uciCommand);
         stockfish.postMessage(uciCommand);
-        stockfish.postMessage('go');
+        stockfish.postMessage('go depth 2');
       });
     });
   </script>
